@@ -60,6 +60,11 @@ namespace RWLT_Host.RWLT
             PingerDataIDs.DID_PRS, PingerDataIDs.DID_PRS,
             PingerDataIDs.DID_TMP, PingerDataIDs.DID_BAT
         };
+        //PingerDataIDs[] dataIDs = new PingerDataIDs[] 
+        //{             
+        //    PingerDataIDs.DID_TMP, PingerDataIDs.DID_BAT
+        //};
+
 
         public double SoundSpeed = PHX.PHX_FWTR_SOUND_SPEED_MPS;
 

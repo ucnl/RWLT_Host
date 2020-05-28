@@ -102,6 +102,8 @@ namespace RWLT_Host.RWLT
         public AgingValue<double> AUXTrack;
         public AgingValue<double> AUXSpeed;
 
+        public bool IsRadialErrorExeedsThreshold { get; private set; }
+
         Func<double, string> latlonFormatter = new Func<double, string>((v) => string.Format(CultureInfo.InvariantCulture, "{0:F06}°", v));
         Func<double, string> svoltageFormatter = new Func<double, string>((v) => string.Format(CultureInfo.InvariantCulture, "{0:F01} V", v));
         Func<double, string> msrFormatter = new Func<double, string>((v) => string.Format(CultureInfo.InvariantCulture, "{0:F01} dB", v));
@@ -553,17 +555,30 @@ namespace RWLT_Host.RWLT
         private void TryLocate()
         {
             List<GeoPoint3DT> basePoints = new List<GeoPoint3DT>();
+            double baseMeanDepth = 0.0;
 
             foreach (var item in baseLocations)
             {
                 if (!double.IsNaN(item.Value.TOASec))
+                {
                     basePoints.Add(new GeoPoint3DT(item.Value.Latitude, item.Value.Longitude, item.Value.Depth, item.Value.TOASec));
-            }
+                    baseMeanDepth += item.Value.Depth;
+                }
+            }            
 
-            if (TargetDepth.IsInitialized && (basePoints.Count >= 3))
+            if (basePoints.Count >= 3)
             {
-                pCore.TargetDepth = TargetDepth.Value;
-                pCore.ProcessBasePoints(basePoints, GetTimeStamp());
+                baseMeanDepth /= basePoints.Count;
+
+                if (TargetDepth.IsInitialized)
+                {
+                    pCore.TargetDepth = TargetDepth.Value;
+                    pCore.ProcessBasePoints(basePoints, GetTimeStamp());
+                }
+                else
+                {                    
+                    pCore.ProcessBasePoints(basePoints, baseMeanDepth, GetTimeStamp());
+                }                
             }
         }
 
@@ -636,7 +651,7 @@ namespace RWLT_Host.RWLT
                         // p0 is zero, because pinger calibrates surface pressure on start and transmitts pressure relative to the surface
                         TargetDepth.Value = PHX.Depth_by_pressure_calc(TargetPressure.Value, 0, rho, gravityAcc);
                     }
-                    else
+                    else if (TargetPressure.IsInitialized)
                     {
                         TargetDepth.Value = PHX.Depth_by_pressure_calc(TargetPressure.Value, 0, PHX.PHX_FWTR_DENSITY_KGM3, gravityAcc);
                     }
@@ -749,7 +764,8 @@ namespace RWLT_Host.RWLT
 
         private void pCore_RadialErrorExeedsThresholdEventHandler(object sender, EventArgs e)
         {
-            //throw new NotImplementedException();
+            IsRadialErrorExeedsThreshold = true;
+            SystemUpdateEvent.Rise(this, new EventArgs());
         }
 
         private void pCore_TargetCourseAndSpeedUpdatedEventHandler(object sender, TargetCourseAndSpeedUpdatedEventArgs e)
@@ -764,6 +780,8 @@ namespace RWLT_Host.RWLT
 
         private void pCore_TargetLocationUpdatedEventHandler(object sender, TargetLocationUpdatedEventArgs e)
         {
+            IsRadialErrorExeedsThreshold = false;
+
             MaxAngularGap = MaxAngularGapRad(e.Location.Latitude, e.Location.Longitude);
 
             foreach (var item in baseLocations)
