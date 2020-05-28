@@ -8,7 +8,6 @@ using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Text;
-using System.Threading;
 using System.Windows.Forms;
 using UCNLDrivers;
 using UCNLKML;
@@ -609,7 +608,8 @@ namespace RWLT_Host
         private void markCurrentBtn_Click(object sender, EventArgs e)
         {
             AddTrackPoint("Marked", 
-                core.TargetLatitude.Value, core.TargetLongitude.Value, core.TargetDepth.Value, 
+                core.TargetLatitude.Value, core.TargetLongitude.Value, 
+                core.TargetDepth.IsInitialized ? core.TargetDepth.Value : 0.0,
                 core.GetTimeStamp(), double.NaN);
         }
 
@@ -634,7 +634,7 @@ namespace RWLT_Host
         private void infoBtn_Click(object sender, EventArgs e)
         {
             using (AboutBox aDialog = new AboutBox())
-            {
+            {                
                 aDialog.ApplyAssembly(Assembly.GetExecutingAssembly());
                 aDialog.Weblink = "www.unavlab.com";
                 aDialog.ShowDialog();
@@ -713,7 +713,15 @@ namespace RWLT_Host
             if (core.TargetLatitude.IsInitialized && core.TargetLongitude.IsInitialized)
             {
                 sb.AppendFormat("LAT: {0}\r\nLON: {1}\r\n", core.TargetLatitude, core.TargetLongitude);
-                sb.AppendFormat("RER: {0}\r\n", core.TargetLocationRadialError);
+
+                if (core.IsRadialErrorExeedsThreshold)
+                {
+                    sb.AppendFormat("RER: > {0} m\r\n", settingsProvider.Data.RadialErrorThrehsold);
+                }
+                else
+                {
+                    sb.AppendFormat("RER: {0}\r\n", core.TargetLocationRadialError);
+                }
                 
                 #region emultion related things
                 if ((emulatorEnabled) && (emulator.IsRunning))
@@ -733,7 +741,7 @@ namespace RWLT_Host
                     //
                 }
                 #endregion
-            }
+            }                            
 
             if (core.TargetDepth.IsInitialized)
                 sb.AppendFormat("DPT: {0}\r\n", core.TargetDepth);
@@ -900,7 +908,7 @@ namespace RWLT_Host
         }
 
         private void core_LocationUpdatedEventHandler(object sender, LocationUpdatedEventArgs e)
-        {
+        {            
             if (e.IsValid)
             {              
                 double course_deg = double.NaN;
@@ -909,6 +917,11 @@ namespace RWLT_Host
                 {
                     if (core.TargetCourse.IsInitialized)
                         course_deg = core.TargetCourse.Value;
+
+                    logger.Write(string.Format(CultureInfo.InvariantCulture, "TLOC: LAT={0:F06}°, LON={1:F06}°, DPT={2}, Valid={3}",
+                        e.Latitude, e.Longitude, 
+                        double.IsNaN(e.Depth) ? "undefined" : string.Format(CultureInfo.InvariantCulture, "{0:F03} m", e.Depth), 
+                        e.IsValid));
                 }
                 else if (e.ID == "AUX GNSS")
                 {
