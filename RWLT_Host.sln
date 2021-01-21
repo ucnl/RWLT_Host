@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RWLT_Host", "RWLT_Host\RWLT_Host.csproj", "{DADA5DEF-4DFF-4565-8C87-A815BE29FF7E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DADA5DEF-4DFF-4565-8C87-A815BE29FF7E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DADA5DEF-4DFF-4565-8C87-A815BE29FF7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DADA5DEF-4DFF-4565-8C87-A815BE29FF7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DADA5DEF-4DFF-4565-8C87-A815BE29FF7E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
