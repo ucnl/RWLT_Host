@@ -1,4 +1,4 @@
-using System.Reflection;
+﻿using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -7,17 +7,26 @@ using System.Runtime.InteropServices;
 // associated with an assembly.
 [assembly: AssemblyTitle("RWLT Host")]
 [assembly: AssemblyDescription("RWLT LBL underwater positioning/tracking system host application.\n\n" +
-                               "More information about RWLT LBL\n" +
-                               "English: https://github.com/ucnl/Docs/tree/master/EN/RWLT\n" +
-                               "Russian: https://github.com/ucnl/Docs/tree/master/RU/RWLT\n\n" +
+                               "Latest release: https://api.github.com/repos/ucnl/RWLT_Host/zipball\n" +
                                "Support: mailto:support@unavlab.com\n\n" +
-                               "Source code:\n" +
-                               "https://github.com/ucnl/RWLT_Host\n")]
+                               "More information about RWLT LBL\n" +
+                               "English: https://docs.unavlab.com/navigation_and_tracking_systems_en.html#rwlt\n" +
+                               "Russian: https://docs.unavlab.com/navigation_and_tracking_systems_ru.html#rwlt\n\n" +                               
+                               "Project source code:\n" +
+                               "https://github.com/ucnl/RWLT_Host\n\n" +
+                               "This application is 100% open-source, and based on our projects:\n" +
+                               "https://github.com/ucnl/UCNLNav\n" +
+                               "https://github.com/ucnl/UCNLPhysics\n" +
+                               "https://github.com/ucnl/UCNLNMEA\n" +
+                               "https://github.com/ucnl/UCNLKML\n" +
+                               "https://github.com/ucnl/UCNLDrivers\n" +
+                               "https://github.com/ucnl/UCNLUCNLUI"
+                               )]
 
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Underwater communication & navigation laboratory, LLC")]
 [assembly: AssemblyProduct("RWLT Host")]
-[assembly: AssemblyCopyright("Copyright © Underwater communication & navigation laboratory, 2019-2020")]
+[assembly: AssemblyCopyright("Copyright © Underwater communication & navigation laboratory, 2019-2021")]
 [assembly: AssemblyTrademark("UC&NL")]
 [assembly: AssemblyCulture("")]
 
