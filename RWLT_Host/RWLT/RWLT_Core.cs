@@ -9,7 +9,7 @@ using UCNLNMEA;
 using UCNLPhysics;
 
 namespace RWLT_Host.RWLT
-{
+{    
     public class LocationUpdatedEventArgs : EventArgs
     {
         #region Properties
@@ -85,15 +85,15 @@ namespace RWLT_Host.RWLT
         public AgingValue<double> TargetDepth;
         public AgingValue<PingerCodeIDs> TargetAlarm;
 
+        public AgingValue<DOPState> HDOPState;
+        public AgingValue<TBAQuality> TBAState;
+
         public AgingValue<double> DistanceToTarget;
         public AgingValue<double> ForwardAzimuthToTarget;
         public AgingValue<double> ReverseAzimuthToTarget;
 
         public AgingValue<double> TargetCourse;
-        public AgingValue<double> TargetSpeed;
 
-        public Dictionary<BaseIDs, AgingValue<double>> BaseLatitudes = new Dictionary<BaseIDs, AgingValue<double>>();
-        public Dictionary<BaseIDs, AgingValue<double>> BaseLongitudes = new Dictionary<BaseIDs, AgingValue<double>>();
         public Dictionary<BaseIDs, AgingValue<double>> BaseBatVoltages = new Dictionary<BaseIDs, AgingValue<double>>();
         public Dictionary<BaseIDs, AgingValue<double>> BaseMSRs = new Dictionary<BaseIDs, AgingValue<double>>();
 
@@ -115,20 +115,21 @@ namespace RWLT_Host.RWLT
         Func<double, string> speedFormatter = new Func<double, string>((v) => string.Format(CultureInfo.InvariantCulture, "{0:F01} km/h ({1:F01} m/s)", v, v / 3.6));
         Func<double, string> dptdstFormatter = new Func<double, string>((v) => string.Format(CultureInfo.InvariantCulture, "{0:F02} m", v));
 
+        TrackFilter trkFilter;
         PCore2D<GeoPoint3DT> pCore;
 
-        Dictionary<BaseIDs, GeoPoint3DT> baseLocations = new Dictionary<BaseIDs, GeoPoint3DT>();
-
         delegate T NullChecker<T>(object parameter);
+        delegate object NullCheckerR<T>(T parameter);
         NullChecker<int> intNullChecker = (x => x == null ? -1 : (int)x);
         NullChecker<double> doubleNullChecker = (x => x == null ? double.NaN : (double)x);
         NullChecker<string> stringNullChecker = (x => x == null ? string.Empty : (string)x);
-
+        NullCheckerR<double> doubleNullCheckerR = (x => double.IsNaN(x) ? null : (object)x);
         
         NMEAMultipleListener NMEAListener;
         SerialPort outPort;
         NMEASerialPort inPort;
         NMEASerialPort auxGNSSPort;
+        RWLT_BaseProcessor baseProcessor;
 
         PrecisionTimer timer;
 
@@ -150,33 +151,29 @@ namespace RWLT_Host.RWLT
         DateTime gnssTimeFix = DateTime.MinValue;
         DateTime gnssTimeFixLocalTS = DateTime.MinValue;
 
-        public double MaxAngularGap { get; private set; }
-
         bool disposed = false;
-
 
         #endregion
 
         #region Constructor
 
-        public RWLT_Core(SerialPortSettings rwltPortSettings, double radialErrorThreshold, double simplexSize)
+        public RWLT_Core(SerialPortSettings rwltPortSettings, double radialErrorThreshold, double simplexSize, 
+            int courseEstimatorFIFOSize, int trkFilterFIFOSize)
         {
             #region parameters
-
-            MaxAngularGap = double.NaN;
 
             var basesIDs = Enum.GetValues(typeof(BaseIDs));
             foreach (BaseIDs baseID in basesIDs)
             {
                 if (baseID != BaseIDs.BASE_INVALID)
                 {
-                    BaseLatitudes.Add(baseID, new AgingValue<double>(4, 10, latlonFormatter));
-                    BaseLongitudes.Add(baseID, new AgingValue<double>(4, 10, latlonFormatter));
                     BaseBatVoltages.Add(baseID, new AgingValue<double>(4, 10, svoltageFormatter));
                     BaseMSRs.Add(baseID, new AgingValue<double>(4, 10, msrFormatter));
-                    baseLocations.Add(baseID, new GeoPoint3DT(double.NaN, double.NaN, double.NaN, double.NaN));
                 }
             }
+
+            HDOPState = new AgingValue<DOPState>(4, 10, x => x.ToString());
+            TBAState = new AgingValue<TBAQuality>(4, 10, x => x.ToString().Replace('_', ' '));
 
             TargetLatitude = new AgingValue<double>(4, 10, latlonFormatter);
             TargetLongitude = new AgingValue<double>(4, 10, latlonFormatter);
@@ -192,7 +189,6 @@ namespace RWLT_Host.RWLT
             ReverseAzimuthToTarget = new AgingValue<double>(4, 10, courseFormatter);
 
             TargetCourse = new AgingValue<double>(4, 10, courseFormatter);
-            TargetSpeed = new AgingValue<double>(4, 10, speedFormatter);
 
             AUXLatitude = new AgingValue<double>(4, 10, latlonFormatter);
             AUXLongitude = new AgingValue<double>(4, 10, latlonFormatter);
@@ -201,15 +197,27 @@ namespace RWLT_Host.RWLT
             
             #endregion
 
-            #region pCore
+            #region trkFilter
 
-            pCore = new PCore2D<GeoPoint3DT>(radialErrorThreshold, simplexSize, Algorithms.WGS84Ellipsoid, 5);
-            pCore.RadialErrorExeedsThrehsoldEventHandler += new EventHandler(pCore_RadialErrorExeedsThresholdEventHandler);
-            pCore.TargetCourseSpeedAndCourseUpdatedHandler += new EventHandler<TargetCourseAndSpeedUpdatedEventArgs>(pCore_TargetCourseAndSpeedUpdatedEventHandler);
-            pCore.TargetLocationUpdatedHandler += new EventHandler<TargetLocationUpdatedEventArgs>(pCore_TargetLocationUpdatedEventHandler);
+            trkFilter = new TrackFilter(trkFilterFIFOSize);
 
             #endregion
 
+            #region pCore
+
+            pCore = new PCore2D<GeoPoint3DT>(radialErrorThreshold, simplexSize, Algorithms.WGS84Ellipsoid, courseEstimatorFIFOSize);
+            pCore.RadialErrorExeedsThrehsoldEventHandler += new EventHandler(pCore_RadialErrorExeedsThresholdEventHandler);
+            pCore.TargetLocationUpdatedExHandler += new EventHandler<TargetLocationUpdatedExEventArgs>(pCore_TargetLocationUpdatedExEventHandler);
+            pCore.BaseQualityUpdatedHandler += new EventHandler<BaseQualityUpdatedEventArgs>(pCore_BaseQualityUpdatedEventHandler);
+
+            #endregion
+
+            #region basesProcessor
+
+            baseProcessor = new RWLT_BaseProcessor(4, 2.0);
+
+            #endregion
+            
             #region NMEA
 
             if (!nmeaSingleton)
@@ -402,18 +410,7 @@ namespace RWLT_Host.RWLT
             LogEvent.Rise(this, new LogEventArgs(LogLineType.INFO, line));
         }
 
-        #region Private
-
-        private int AliveBasesNumber()
-        {
-            int result = 0;
-
-            foreach (var item in baseLocations)
-                if (!double.IsNaN(item.Value.TOASec))
-                    result++;
-
-            return result;
-        }
+        #region Private        
 
         public DateTime GetTimeStamp()
         {
@@ -460,7 +457,7 @@ namespace RWLT_Host.RWLT
             }
         }
 
-        private void WriteOutData(double bLat, double bLon, double bDpt, double rErr, bool isValid, double wTemp)
+        private void WriteOutData(double bLat, double bLon, double bDpt, double rErr, double cource, bool isValid, double wTemp)
         {
             string latCardinal, lonCardinal;
 
@@ -484,10 +481,10 @@ namespace RWLT_Host.RWLT
                 {
                     GetTimeStamp(), 
                     RMCvString, 
-                    Math.Abs(bLat), latCardinal,
-                    Math.Abs(bLon), lonCardinal,
+                    doubleNullCheckerR(Math.Abs(bLat)), latCardinal,
+                    doubleNullCheckerR(Math.Abs(bLon)), lonCardinal,
                     null, // speed
-                    null, // track true
+                    doubleNullCheckerR(cource), // track true
                     GetTimeStamp(),
                     null, // magnetic variation
                     null, // magnetic variation direction
@@ -509,12 +506,12 @@ namespace RWLT_Host.RWLT
                 new object[]
                 {
                     GetTimeStamp(),
-                    Math.Abs(bLat), latCardinal,
-                    Math.Abs(bLon), lonCardinal,
+                    doubleNullCheckerR(Math.Abs(bLat)), latCardinal,
+                    doubleNullCheckerR(Math.Abs(bLon)), lonCardinal,
                     "GPS fix",
                     4,
-                    rErr,
-                    -bDpt,
+                    doubleNullCheckerR(rErr),
+                    doubleNullCheckerR(-bDpt),
                     "M",
                     null,
                     "M",
@@ -530,7 +527,7 @@ namespace RWLT_Host.RWLT
             {
                 emuString.Append(NMEAParser.BuildSentence(TalkerIdentifiers.GP, SentenceIdentifiers.MTW, new object[]
                 {
-                    wTemp,
+                    doubleNullCheckerR(wTemp),
                     "C"
                 }));
             }
@@ -552,23 +549,19 @@ namespace RWLT_Host.RWLT
             }
         }
 
-        private void TryLocate()
+        private void TryLocate(IEnumerable<GeoPoint3DT> basePoints)
         {
-            List<GeoPoint3DT> basePoints = new List<GeoPoint3DT>();
             double baseMeanDepth = 0.0;
-
-            foreach (var item in baseLocations)
+            int bCount = 0;
+            foreach (var item in basePoints)
             {
-                if (!double.IsNaN(item.Value.TOASec))
-                {
-                    basePoints.Add(new GeoPoint3DT(item.Value.Latitude, item.Value.Longitude, item.Value.Depth, item.Value.TOASec));
-                    baseMeanDepth += item.Value.Depth;
-                }
-            }            
+                baseMeanDepth += item.Depth;
+                bCount++;
+            }
 
-            if (basePoints.Count >= 3)
+            if (bCount >= 3)
             {
-                baseMeanDepth /= basePoints.Count;
+                baseMeanDepth /= bCount;
 
                 if (TargetDepth.IsInitialized)
                 {
@@ -576,10 +569,10 @@ namespace RWLT_Host.RWLT
                     pCore.ProcessBasePoints(basePoints, GetTimeStamp());
                 }
                 else
-                {                    
+                {
                     pCore.ProcessBasePoints(basePoints, baseMeanDepth, GetTimeStamp());
                 }                
-            }
+            }            
         }
 
         private void OnLBLA(object[] parameters)
@@ -603,22 +596,13 @@ namespace RWLT_Host.RWLT
                 (!double.IsNaN(baseDepth)))
             {
 
-                LocationUpdatedEvent.Rise(this, new LocationUpdatedEventArgs(baseID.ToString(),
+                LocationUpdatedEvent.Rise(this, new LocationUpdatedEventArgs(baseID.ToString().Replace('_', ' '),
                     baseLat, baseLon, baseDepth,
                     true, 
                     GetTimeStamp()));      
 
-                BaseLatitudes[baseID].Value = baseLat;
-                BaseLongitudes[baseID].Value = baseLon;
-
-                baseLocations[baseID].Latitude = baseLat;
-                baseLocations[baseID].Longitude = baseLon;
-                baseLocations[baseID].Depth = baseDepth;
-
                 if (!double.IsNaN(MSR))
-                    BaseMSRs[baseID].Value = MSR;
-                else
-                    BaseMSRs[baseID].Value = 0.0;
+                    BaseMSRs[baseID].Value = MSR;                
 
                 if (!double.IsNaN(baseBat))
                     BaseBatVoltages[baseID].Value = baseBat;
@@ -648,7 +632,7 @@ namespace RWLT_Host.RWLT
                             Soundspeed = PHX.Speed_of_sound_UNESCO_calc(TargetTemperature.Value, TargetPressure.Value / 2.0, salinity);
 
                         double rho = PHX.Water_density_calc(TargetTemperature.Value, TargetPressure.Value / 2.0, salinity);
-                        // p0 is zero, because pinger calibrates surface pressure on start and transmitts pressure relative to the surface
+                        // p0 is zero, because pinger calibrates surface pressure on start and transmits pressure relative to the surface
                         TargetDepth.Value = PHX.Depth_by_pressure_calc(TargetPressure.Value, 0, rho, gravityAcc);
                     }
                     else if (TargetPressure.IsInitialized)
@@ -661,22 +645,9 @@ namespace RWLT_Host.RWLT
                     TargetAlarm.Value = (PingerCodeIDs)Enum.ToObject(typeof(PingerCodeIDs), Convert.ToInt32(pData));
                 }
 
-                if (!double.IsNaN(baseLocations[baseID].TOASec)) // next cycle begins
-                {
-                    if (AliveBasesNumber() >= 3) // if we have received only 3 stations - try to locate by only 3 stations
-                        TryLocate();
-
-                    foreach (var baseItem in baseLocations)
-                        baseItem.Value.TOASec = double.NaN;
-
-                    baseLocations[baseID].TOASec = TOAs;
-                }
-                else
-                {
-                    baseLocations[baseID].TOASec = TOAs;
-                    if (AliveBasesNumber() > 3)
-                        TryLocate();
-                }
+                var bases = baseProcessor.ProcessBase(baseID, baseLat, baseLon, baseDepth, TOAs);
+                if (bases != null)
+                    TryLocate(bases);
             }
 
             OnSystemUpdate();
@@ -686,36 +657,6 @@ namespace RWLT_Host.RWLT
         {
             systemUpdateTS = 0;
             SystemUpdateEvent.Rise(this, new EventArgs());
-        }
-
-        /// TODO: refactor
-        private double MaxAngularGapRad(double lat_deg, double lon_deg)
-        {
-            List<double> dangles = new List<double>();
-            double lt_rad = Algorithms.Deg2Rad(lat_deg);
-            double ln_rad = Algorithms.Deg2Rad(lon_deg);
-
-            foreach (var item in baseLocations)
-            {
-                dangles.Add(Algorithms.HaversineInitialBearing(lt_rad, ln_rad,
-                    Algorithms.Deg2Rad(item.Value.Latitude), Algorithms.Deg2Rad(item.Value.Longitude)));
-            }
-
-            dangles.Sort();
-
-            double maxGap = 0.0;
-            double gap;
-            for (int i = 1; i <= dangles.Count; i++)
-            {
-                gap = dangles[i % dangles.Count] - dangles[i - 1];
-                if (gap < 0)
-                    gap += Math.PI * 2;
-
-                if (gap > maxGap)
-                    maxGap = gap;
-            }
-
-            return maxGap;
         }
 
         #endregion
@@ -768,32 +709,30 @@ namespace RWLT_Host.RWLT
             SystemUpdateEvent.Rise(this, new EventArgs());
         }
 
-        private void pCore_TargetCourseAndSpeedUpdatedEventHandler(object sender, TargetCourseAndSpeedUpdatedEventArgs e)
+        private void pCore_TargetLocationUpdatedExEventHandler(object sender, TargetLocationUpdatedExEventArgs e)
         {
-            if (e.IsSpeedValid)
-                TargetSpeed.Value = e.Speed;
-
             TargetCourse.Value = e.Course;
-
-            SystemUpdateEvent.Rise(this, new EventArgs());
-        }
-
-        private void pCore_TargetLocationUpdatedEventHandler(object sender, TargetLocationUpdatedEventArgs e)
-        {
             IsRadialErrorExeedsThreshold = false;
 
-            MaxAngularGap = MaxAngularGapRad(e.Location.Latitude, e.Location.Longitude);
-
-            foreach (var item in baseLocations)
-            {
-                item.Value.TOASec = double.NaN;
-            }
-
-            LocationUpdatedEvent.Rise(this, 
-                new LocationUpdatedEventArgs("Target", 
+            LocationUpdatedEvent.Rise(this,
+                new LocationUpdatedEventArgs("RWLT (RAW)",
                     e.Location.Latitude, e.Location.Longitude, e.Location.Depth,
                     e.Location.RadialError <= pCore.RadialErrorThreshold,
-                    e.TimeStamp));         
+                    e.TimeStamp));
+
+
+            GeoPoint locationFlt = new GeoPoint();
+
+            if (TargetDepth.IsInitialized)
+                locationFlt = trkFilter.Filter(e.Location.Latitude, e.Location.Longitude);
+            else
+                locationFlt = new GeoPoint(e.Location.Latitude, e.Location.Longitude);
+
+            LocationUpdatedEvent.Rise(this,
+                new LocationUpdatedEventArgs("RWLT (FLT)",
+                    locationFlt.Latitude, locationFlt.Longitude, e.Location.Depth,
+                    e.Location.RadialError <= pCore.RadialErrorThreshold,
+                    e.TimeStamp));
 
             if (OutPortUsed)
             {
@@ -801,11 +740,12 @@ namespace RWLT_Host.RWLT
                 if (TargetTemperature.IsInitialized)
                     wTemp = TargetTemperature.Value;
 
-                WriteOutData(e.Location.Latitude, 
-                    e.Location.Longitude, 
-                    e.Location.Depth, 
-                    e.Location.RadialError, 
-                    e.Location.RadialError <= pCore.RadialErrorThreshold, 
+                WriteOutData(locationFlt.Latitude,
+                    locationFlt.Longitude,
+                    e.Location.Depth,
+                    e.Location.RadialError,
+                    e.Course,
+                    e.Location.RadialError <= pCore.RadialErrorThreshold,
                     wTemp);
             }
 
@@ -816,6 +756,12 @@ namespace RWLT_Host.RWLT
             UpdateDistanceToTarget();
         }
 
+        private void pCore_BaseQualityUpdatedEventHandler(object sender, BaseQualityUpdatedEventArgs e)
+        {
+            HDOPState.Value = e.DopState;
+            TBAState.Value = e.TBAState;
+        }
+        
         #endregion
 
         #endregion

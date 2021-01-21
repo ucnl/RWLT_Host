@@ -62,7 +62,7 @@ namespace RWLT_Host.RWLT
         };
         //PingerDataIDs[] dataIDs = new PingerDataIDs[] 
         //{             
-        //    PingerDataIDs.DID_TMP, PingerDataIDs.DID_BAT
+        //    PingerDataIDs.DID_BAT
         //};
 
 
