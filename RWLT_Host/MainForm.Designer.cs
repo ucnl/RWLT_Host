@@ -56,16 +56,29 @@
             this.auxGNSSStatusLbl = new System.Windows.Forms.ToolStripStatusLabel();
             this.geoPlot = new UCNLUI.Controls.GeoPlotCartesian();
             this.targetToolStrip = new System.Windows.Forms.ToolStrip();
-            this.courseDstToTargetCapLbl = new System.Windows.Forms.ToolStripLabel();
-            this.courseDstToTargetLbl = new System.Windows.Forms.ToolStripLabel();
+            this.auxCapLbl = new System.Windows.Forms.ToolStripLabel();
+            this.auxCrsLbl = new System.Windows.Forms.ToolStripLabel();
+            this.toolStripSeparator8 = new System.Windows.Forms.ToolStripSeparator();
+            this.auxMiscLbl = new System.Windows.Forms.ToolStripLabel();
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
-            this.targetCapLbl = new System.Windows.Forms.ToolStripLabel();
-            this.targetLbl = new System.Windows.Forms.ToolStripLabel();
             this.toolStripLabel1 = new System.Windows.Forms.ToolStripLabel();
-            this.tbaLabel = new System.Windows.Forms.ToolStripLabel();
+            this.tbaLbl = new System.Windows.Forms.ToolStripLabel();
+            this.toolStripLabel2 = new System.Windows.Forms.ToolStripLabel();
+            this.hdopLbl = new System.Windows.Forms.ToolStripLabel();
+            this.auxToolStrip = new System.Windows.Forms.ToolStrip();
+            this.targetCapLbl = new System.Windows.Forms.ToolStripLabel();
+            this.targetCrsLbl = new System.Windows.Forms.ToolStripLabel();
+            this.toolStripSeparator9 = new System.Windows.Forms.ToolStripSeparator();
+            this.targetMiscLbl = new System.Windows.Forms.ToolStripLabel();
+            this.toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
+            this.plotToolStrip = new System.Windows.Forms.ToolStrip();
+            this.toolStripLabel3 = new System.Windows.Forms.ToolStripLabel();
+            this.tracksToFitCbx = new System.Windows.Forms.ToolStripComboBox();
             this.mainToolStrip.SuspendLayout();
             this.mainStatusStrip.SuspendLayout();
             this.targetToolStrip.SuspendLayout();
+            this.auxToolStrip.SuspendLayout();
+            this.plotToolStrip.SuspendLayout();
             this.SuspendLayout();
             // 
             // mainToolStrip
@@ -308,93 +321,184 @@
             this.geoPlot.AxisLabelsFntSize = 3;
             this.geoPlot.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(15)))), ((int)(((byte)(20)))), ((int)(((byte)(30)))));
             this.geoPlot.CourseLineLength = 200;
+            this.geoPlot.FitByDictionary = false;
             this.geoPlot.GridColor = System.Drawing.Color.Gainsboro;
             this.geoPlot.HistoryLinesColor = System.Drawing.Color.GreenYellow;
             this.geoPlot.HistoryLinesFntSize = 3;
             this.geoPlot.LeftUpperCornerText = "";
-            this.geoPlot.Location = new System.Drawing.Point(15, 64);
+            this.geoPlot.Location = new System.Drawing.Point(15, 146);
             this.geoPlot.Margin = new System.Windows.Forms.Padding(6, 9, 6, 9);
             this.geoPlot.MiscFntSize = 4;
             this.geoPlot.MiscInfoColor = System.Drawing.Color.Yellow;
             this.geoPlot.Name = "geoPlot";
-            this.geoPlot.Size = new System.Drawing.Size(847, 473);
+            this.geoPlot.Size = new System.Drawing.Size(847, 385);
             this.geoPlot.TabIndex = 2;
             // 
             // targetToolStrip
             // 
             this.targetToolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.courseDstToTargetCapLbl,
-            this.courseDstToTargetLbl,
+            this.auxCapLbl,
+            this.auxCrsLbl,
+            this.toolStripSeparator8,
+            this.auxMiscLbl,
             this.toolStripSeparator5,
-            this.targetCapLbl,
-            this.targetLbl,
             this.toolStripLabel1,
-            this.tbaLabel});
+            this.tbaLbl,
+            this.toolStripLabel2,
+            this.hdopLbl});
             this.targetToolStrip.Location = new System.Drawing.Point(0, 30);
             this.targetToolStrip.Name = "targetToolStrip";
-            this.targetToolStrip.Size = new System.Drawing.Size(877, 35);
+            this.targetToolStrip.Size = new System.Drawing.Size(877, 41);
             this.targetToolStrip.TabIndex = 3;
             this.targetToolStrip.Text = "toolStrip1";
             // 
-            // courseDstToTargetCapLbl
+            // auxCapLbl
             // 
-            this.courseDstToTargetCapLbl.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.courseDstToTargetCapLbl.Name = "courseDstToTargetCapLbl";
-            this.courseDstToTargetCapLbl.Size = new System.Drawing.Size(131, 32);
-            this.courseDstToTargetCapLbl.Text = "AUX/TARGET:";
+            this.auxCapLbl.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.auxCapLbl.Name = "auxCapLbl";
+            this.auxCapLbl.Size = new System.Drawing.Size(55, 38);
+            this.auxCapLbl.Text = "AUX:";
             // 
-            // courseDstToTargetLbl
+            // auxCrsLbl
             // 
-            this.courseDstToTargetLbl.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.courseDstToTargetLbl.Font = new System.Drawing.Font("Segoe UI", 13.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.courseDstToTargetLbl.Name = "courseDstToTargetLbl";
-            this.courseDstToTargetLbl.Size = new System.Drawing.Size(59, 32);
-            this.courseDstToTargetLbl.Text = "- - -";
-            this.courseDstToTargetLbl.ToolTipText = "🡺 - Distance from AUX GNSS location to the target\r\n🡽 - azimuth from AUX GNSS lo" +
-    "cation to the target\r\n⎈ - AUX GNSS track\r\n🡿 - azimuth from the target to AUX GN" +
-    "SS location";
+            this.auxCrsLbl.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.auxCrsLbl.Font = new System.Drawing.Font("Segoe UI", 16.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.auxCrsLbl.Name = "auxCrsLbl";
+            this.auxCrsLbl.Size = new System.Drawing.Size(66, 38);
+            this.auxCrsLbl.Text = "- - -";
+            this.auxCrsLbl.ToolTipText = "⎈ - AUX GNSS track\r\n🡽 - azimuth to the target";
+            // 
+            // toolStripSeparator8
+            // 
+            this.toolStripSeparator8.Name = "toolStripSeparator8";
+            this.toolStripSeparator8.Size = new System.Drawing.Size(6, 41);
+            // 
+            // auxMiscLbl
+            // 
+            this.auxMiscLbl.Font = new System.Drawing.Font("Segoe UI", 16.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.auxMiscLbl.Name = "auxMiscLbl";
+            this.auxMiscLbl.Size = new System.Drawing.Size(66, 38);
+            this.auxMiscLbl.Text = "- - -";
+            this.auxMiscLbl.ToolTipText = "🡺-Distance to the target\r\n🐌 - AUX GNSS Speed";
             // 
             // toolStripSeparator5
             // 
             this.toolStripSeparator5.Name = "toolStripSeparator5";
-            this.toolStripSeparator5.Size = new System.Drawing.Size(6, 35);
-            // 
-            // targetCapLbl
-            // 
-            this.targetCapLbl.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.targetCapLbl.Name = "targetCapLbl";
-            this.targetCapLbl.Size = new System.Drawing.Size(84, 32);
-            this.targetCapLbl.Text = "TARGET:";
-            // 
-            // targetLbl
-            // 
-            this.targetLbl.Font = new System.Drawing.Font("Segoe UI", 13.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.targetLbl.Name = "targetLbl";
-            this.targetLbl.Size = new System.Drawing.Size(59, 32);
-            this.targetLbl.Text = "- - -";
-            this.targetLbl.ToolTipText = "🡻 - target depth\r\n⚡ - target supply voltage\r\n🌡 - water temperature\r\n⎈ - target " +
-    "course\r\n🚤 - target speed";
+            this.toolStripSeparator5.Size = new System.Drawing.Size(6, 41);
             // 
             // toolStripLabel1
             // 
             this.toolStripLabel1.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.toolStripLabel1.Name = "toolStripLabel1";
-            this.toolStripLabel1.Size = new System.Drawing.Size(50, 32);
+            this.toolStripLabel1.Size = new System.Drawing.Size(50, 38);
             this.toolStripLabel1.Text = "TBA:";
+            this.toolStripLabel1.ToolTipText = "Target-to-base arrangement quality.\r\nThe best arrangement is when the target is i" +
+    "nside a polygon formed by the base stations";
             // 
-            // tbaLabel
+            // tbaLbl
             // 
-            this.tbaLabel.Font = new System.Drawing.Font("Segoe UI", 13.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.tbaLabel.Name = "tbaLabel";
-            this.tbaLabel.Size = new System.Drawing.Size(59, 32);
-            this.tbaLabel.Text = "- - -";
-            this.tbaLabel.ToolTipText = "Target-to-base arrangement quality";
+            this.tbaLbl.Font = new System.Drawing.Font("Segoe UI", 16.2F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.tbaLbl.Name = "tbaLbl";
+            this.tbaLbl.Size = new System.Drawing.Size(66, 38);
+            this.tbaLbl.Text = "- - -";
+            this.tbaLbl.ToolTipText = "Target-to-base arrangement quality";
+            // 
+            // toolStripLabel2
+            // 
+            this.toolStripLabel2.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.toolStripLabel2.Name = "toolStripLabel2";
+            this.toolStripLabel2.Size = new System.Drawing.Size(70, 38);
+            this.toolStripLabel2.Text = "HDOP:";
+            this.toolStripLabel2.ToolTipText = "Horizontal dilution of precision";
+            // 
+            // hdopLbl
+            // 
+            this.hdopLbl.Font = new System.Drawing.Font("Segoe UI", 16.2F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.hdopLbl.Name = "hdopLbl";
+            this.hdopLbl.Size = new System.Drawing.Size(66, 38);
+            this.hdopLbl.Text = "- - -";
+            this.hdopLbl.ToolTipText = "Better when the target is inside navigation base";
+            // 
+            // auxToolStrip
+            // 
+            this.auxToolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.targetCapLbl,
+            this.targetCrsLbl,
+            this.toolStripSeparator9,
+            this.targetMiscLbl,
+            this.toolStripSeparator7});
+            this.auxToolStrip.Location = new System.Drawing.Point(0, 71);
+            this.auxToolStrip.Name = "auxToolStrip";
+            this.auxToolStrip.Size = new System.Drawing.Size(877, 41);
+            this.auxToolStrip.TabIndex = 4;
+            this.auxToolStrip.Text = "toolStrip1";
+            // 
+            // targetCapLbl
+            // 
+            this.targetCapLbl.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.targetCapLbl.Name = "targetCapLbl";
+            this.targetCapLbl.Size = new System.Drawing.Size(49, 38);
+            this.targetCapLbl.Text = "TGT:";
+            // 
+            // targetCrsLbl
+            // 
+            this.targetCrsLbl.Font = new System.Drawing.Font("Segoe UI", 16.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.targetCrsLbl.Name = "targetCrsLbl";
+            this.targetCrsLbl.Size = new System.Drawing.Size(66, 38);
+            this.targetCrsLbl.Text = "- - -";
+            this.targetCrsLbl.ToolTipText = "⎈ - Target track\r\n🡽 - azimuth to AUX GNSS\r\n";
+            // 
+            // toolStripSeparator9
+            // 
+            this.toolStripSeparator9.Name = "toolStripSeparator9";
+            this.toolStripSeparator9.Size = new System.Drawing.Size(6, 41);
+            // 
+            // targetMiscLbl
+            // 
+            this.targetMiscLbl.Font = new System.Drawing.Font("Segoe UI", 16.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.targetMiscLbl.Name = "targetMiscLbl";
+            this.targetMiscLbl.Size = new System.Drawing.Size(66, 38);
+            this.targetMiscLbl.Text = "- - -";
+            this.targetMiscLbl.ToolTipText = "🡻 - Depth of the target\r\n⚡ - Battery voltage\r\n🌡 - Water temperature";
+            // 
+            // toolStripSeparator7
+            // 
+            this.toolStripSeparator7.Name = "toolStripSeparator7";
+            this.toolStripSeparator7.Size = new System.Drawing.Size(6, 41);
+            // 
+            // plotToolStrip
+            // 
+            this.plotToolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripLabel3,
+            this.tracksToFitCbx});
+            this.plotToolStrip.Location = new System.Drawing.Point(0, 112);
+            this.plotToolStrip.Name = "plotToolStrip";
+            this.plotToolStrip.Size = new System.Drawing.Size(877, 28);
+            this.plotToolStrip.TabIndex = 5;
+            this.plotToolStrip.Text = "toolStrip1";
+            // 
+            // toolStripLabel3
+            // 
+            this.toolStripLabel3.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.toolStripLabel3.Name = "toolStripLabel3";
+            this.toolStripLabel3.Size = new System.Drawing.Size(115, 25);
+            this.toolStripLabel3.Text = "TRACKS TO FIT";
+            // 
+            // tracksToFitCbx
+            // 
+            this.tracksToFitCbx.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.tracksToFitCbx.DropDownWidth = 200;
+            this.tracksToFitCbx.Name = "tracksToFitCbx";
+            this.tracksToFitCbx.Size = new System.Drawing.Size(200, 28);
+            this.tracksToFitCbx.SelectedIndexChanged += new System.EventHandler(this.tracksToFitCbx_SelectedIndexChanged);
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(11F, 28F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(877, 568);
+            this.Controls.Add(this.plotToolStrip);
+            this.Controls.Add(this.auxToolStrip);
             this.Controls.Add(this.targetToolStrip);
             this.Controls.Add(this.geoPlot);
             this.Controls.Add(this.mainStatusStrip);
@@ -411,6 +515,10 @@
             this.mainStatusStrip.PerformLayout();
             this.targetToolStrip.ResumeLayout(false);
             this.targetToolStrip.PerformLayout();
+            this.auxToolStrip.ResumeLayout(false);
+            this.auxToolStrip.PerformLayout();
+            this.plotToolStrip.ResumeLayout(false);
+            this.plotToolStrip.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -441,17 +549,28 @@
         private System.Windows.Forms.ToolStrip targetToolStrip;
         private System.Windows.Forms.ToolStripStatusLabel auxGNSSStatusCaptionLbl;
         private System.Windows.Forms.ToolStripStatusLabel auxGNSSStatusLbl;
-        private System.Windows.Forms.ToolStripLabel courseDstToTargetCapLbl;
-        private System.Windows.Forms.ToolStripLabel courseDstToTargetLbl;
+        private System.Windows.Forms.ToolStripLabel auxCapLbl;
+        private System.Windows.Forms.ToolStripLabel auxCrsLbl;
         private System.Windows.Forms.ToolStripButton emulatorBtn;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator5;
-        private System.Windows.Forms.ToolStripLabel targetCapLbl;
-        private System.Windows.Forms.ToolStripLabel targetLbl;
         private System.Windows.Forms.ToolStripLabel toolStripLabel1;
-        private System.Windows.Forms.ToolStripLabel tbaLabel;
+        private System.Windows.Forms.ToolStripLabel tbaLbl;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator6;
         private System.Windows.Forms.ToolStripButton isScreenShotsBtn;
         private System.Windows.Forms.ToolStripButton markCurrentBtn;
+        private System.Windows.Forms.ToolStrip auxToolStrip;
+        private System.Windows.Forms.ToolStripLabel targetCapLbl;
+        private System.Windows.Forms.ToolStripLabel targetCrsLbl;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator7;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator8;
+        private System.Windows.Forms.ToolStripLabel auxMiscLbl;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator9;
+        private System.Windows.Forms.ToolStripLabel targetMiscLbl;
+        private System.Windows.Forms.ToolStripLabel toolStripLabel2;
+        private System.Windows.Forms.ToolStripLabel hdopLbl;
+        private System.Windows.Forms.ToolStrip plotToolStrip;
+        private System.Windows.Forms.ToolStripLabel toolStripLabel3;
+        private System.Windows.Forms.ToolStripComboBox tracksToFitCbx;
     }
 }
 

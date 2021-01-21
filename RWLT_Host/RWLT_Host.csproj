@@ -44,7 +44,8 @@
     <Reference Include="UCNLKML">
       <HintPath>..\..\..\UCNLLibs\UCNLKML\UCNLKML\bin\Release\UCNLKML.dll</HintPath>
     </Reference>
-    <Reference Include="UCNLNav">
+    <Reference Include="UCNLNav, Version=1.0.7578.30868, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\UCNLLibs\UCNLNav\UCNLNav\bin\Release\UCNLNav.dll</HintPath>
     </Reference>
     <Reference Include="UCNLNMEA">
@@ -68,8 +69,10 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RWLT\RWLT.cs" />
+    <Compile Include="RWLT\RWLT_BaseProcessor.cs" />
     <Compile Include="RWLT\RWLT_Core.cs" />
     <Compile Include="RWLT\RWLT_Emulator.cs" />
+    <Compile Include="RWLT\TrackFilter.cs" />
     <Compile Include="SettingsContainer.cs" />
     <Compile Include="SettingsEditor.cs">
       <SubType>Form</SubType>

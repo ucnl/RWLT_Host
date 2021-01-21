@@ -31,6 +31,9 @@ namespace RWLT_Host
 
         public bool IsEmulatorButtonVisible;
 
+        public int CourseEstimatorFIFOSize;
+        public int TrackFilterFIFOSize;
+
         #endregion
 
         #region Methods
@@ -58,6 +61,9 @@ namespace RWLT_Host
             TrackPointsToShow = 100;
 
             IsEmulatorButtonVisible = false;
+
+            CourseEstimatorFIFOSize = 8;
+            TrackFilterFIFOSize = 4;
         }
 
         #endregion

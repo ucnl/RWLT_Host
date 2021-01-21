@@ -22,7 +22,7 @@ namespace RWLT_Host
         #region Properties
 
         TSLogProvider logger;
-        SimpeSettingsProviderXML<SettingsContainer> settingsProvider;       
+        SimpleSettingsProviderXML<SettingsContainer> settingsProvider;       
 
         string settingsFileName;
         string logPath;
@@ -57,12 +57,32 @@ namespace RWLT_Host
         RWLT_Emulator emulator;
         bool emulatorEnabled = false;
 
+        Dictionary<TBAQuality, Color> tbaTextColors = new Dictionary<TBAQuality, Color>()
+        {
+            { TBAQuality.Good, Color.Green },
+            { TBAQuality.Fair, Color.DarkGoldenrod },
+            { TBAQuality.Poor, Color.Orange },
+            { TBAQuality.Out_of_base, Color.Red },
+            { TBAQuality.Invalid, Color.Black }
+        };
+
+        Dictionary<DOPState, Color> dopTextColors = new Dictionary<DOPState, Color>()
+        {
+            { DOPState.Ideal, Color.LimeGreen },
+            { DOPState.Excellent, Color.Green },
+            { DOPState.Good, Color.Olive },
+            { DOPState.Moderate, Color.DarkGoldenrod },
+            { DOPState.Fair, Color.Orange },
+            { DOPState.Poor, Color.Red },
+            { DOPState.Invalid, Color.Black }
+        };
+
         #endregion
 
         #region Constructor
 
         public MainForm()
-        {
+        {            
             InitializeComponent();
 
             #region paths & filenames
@@ -86,7 +106,7 @@ namespace RWLT_Host
 
             #region settings
 
-            settingsProvider = new SimpeSettingsProviderXML<SettingsContainer>();
+            settingsProvider = new SimpleSettingsProviderXML<SettingsContainer>();
             settingsProvider.isSwallowExceptions = false;
 
             logger.Write(string.Format("Loading settings from {0}", settingsFileName));
@@ -109,7 +129,7 @@ namespace RWLT_Host
 
             core = new RWLT_Core(new SerialPortSettings(settingsProvider.Data.InPortName, settingsProvider.Data.InPortBaudrate,
                 System.IO.Ports.Parity.None, DataBits.dataBits8, System.IO.Ports.StopBits.One, System.IO.Ports.Handshake.None),
-                settingsProvider.Data.RadialErrorThrehsold, 10.0);
+                settingsProvider.Data.RadialErrorThrehsold, 10.0, settingsProvider.Data.CourseEstimatorFIFOSize, settingsProvider.Data.TrackFilterFIFOSize);
 
             core.Salinity = settingsProvider.Data.SalinityPSU;
             if (!settingsProvider.Data.IsSoundSpeedAuto)
@@ -140,28 +160,47 @@ namespace RWLT_Host
 
             #region Misc. UI
 
-            geoPlot.AddTrack("Target", Color.Lime, 1, 4, settingsProvider.Data.TrackPointsToShow, true);
+            auxCrsLbl.Visible = settingsProvider.Data.IsUseAUXGNSSPort;
+            auxCapLbl.Visible = settingsProvider.Data.IsUseAUXGNSSPort;
+            auxGNSSStatusLbl.Visible = settingsProvider.Data.IsUseAUXGNSSPort;
+            auxGNSSStatusCaptionLbl.Visible = settingsProvider.Data.IsUseAUXGNSSPort;
+            auxGNSSStatusCaptionLbl.Visible = settingsProvider.Data.IsUseAUXGNSSPort;
+            auxGNSSStatusLbl.Visible = settingsProvider.Data.IsUseAUXGNSSPort;
 
-            courseDstToTargetLbl.Visible = settingsProvider.Data.IsUseAUXGNSSPort;
-            courseDstToTargetCapLbl.Visible = settingsProvider.Data.IsUseAUXGNSSPort;
-            auxGNSSStatusLbl.Visible = settingsProvider.Data.IsUseAUXGNSSPort;
-            auxGNSSStatusCaptionLbl.Visible = settingsProvider.Data.IsUseAUXGNSSPort;
-            auxGNSSStatusCaptionLbl.Visible = settingsProvider.Data.IsUseAUXGNSSPort;
-            auxGNSSStatusLbl.Visible = settingsProvider.Data.IsUseAUXGNSSPort;
+            List<string> fitTracksNames = new List<string>();
+            fitTracksNames.Add("ALL");
+            fitTracksNames.Add("RWLT (FLT)");
+            fitTracksNames.Add("Marked");
+            fitTracksNames.Add("RWLT (FLT)+Marked");
+
+            geoPlot.AddTrack("RWLT (RAW)", Color.Yellow, 1, 2, 64, true);
+            geoPlot.AddTrack("RWLT (FLT)", Color.Lime, 1, 2, settingsProvider.Data.TrackPointsToShow, true);
 
             if (settingsProvider.Data.IsUseAUXGNSSPort)
             {
-                geoPlot.AddTrack("AUX GNSS", Color.Cyan, 1, 4, 32, true);
+                geoPlot.AddTrack("AUX GNSS", Color.Cyan, 1, 4, 64, true);
+                fitTracksNames.Add("AUX GNSS");
+                fitTracksNames.Add("RWLT (FLT)+AUX GNSS");
+                fitTracksNames.Add("RWLT (FLT)+AUX GNSS+Marked");
             }
 
-            geoPlot.AddTrack(BaseIDs.BASE_1.ToString(), Color.Red, 1, 2, 8, true);
-            geoPlot.AddTrack(BaseIDs.BASE_2.ToString(), Color.Yellow, 1, 2, 8, true);
-            geoPlot.AddTrack(BaseIDs.BASE_3.ToString(), Color.Blue, 1, 2, 8, true);
-            geoPlot.AddTrack(BaseIDs.BASE_4.ToString(), Color.Green, 1, 2, 8, true);
+            fitTracksNames.Add("BASE 1");
+            fitTracksNames.Add("BASE 2");
+            fitTracksNames.Add("BASE 3");
+            fitTracksNames.Add("BASE 4");
 
-            geoPlot.AddTrack("Marked", Color.Magenta, 1, 4, 256, false);
+            geoPlot.AddTrack("Marked", Color.Magenta, 4, 6, 256, false);
+            
+            geoPlot.AddTrack("BASE 1", Color.Salmon, 4, 6, 4, false);
+            geoPlot.AddTrack("BASE 2", Color.Gold, 4, 6, 4, false);
+            geoPlot.AddTrack("BASE 3", Color.MediumSpringGreen, 4, 6, 4, false);
+            geoPlot.AddTrack("BASE 4", Color.SkyBlue, 4, 6, 4, false);
 
             TracksChanged = false;
+
+            tracksToFitCbx.Items.Clear();
+            tracksToFitCbx.Items.AddRange(fitTracksNames.ToArray());
+            tracksToFitCbx.SelectedIndex = 0;
 
             #endregion
 
@@ -643,6 +682,25 @@ namespace RWLT_Host
 
         #endregion        
 
+        #region plotStrip
+
+        private void tracksToFitCbx_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            var fTrackNames = tracksToFitCbx.SelectedItem.ToString();
+            if (fTrackNames == "ALL")
+                geoPlot.FitByDictionary = false;
+            else
+            {
+                var splits = fTrackNames.Split(new char[] { '+' });
+                geoPlot.FitByDictionary = true;
+                geoPlot.TracksToFitSet(splits);
+            }
+
+            geoPlot.Invalidate();
+        }
+
+        #endregion
+
         #region mainForm
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
@@ -816,7 +874,18 @@ namespace RWLT_Host
 
             #endregion
 
-            #region target status label
+            #region target status labels
+
+            sb.Clear();
+
+            if (core.TargetCourse.IsInitializedAndNotObsolete)
+                sb.AppendFormat("⎈{0} ", core.TargetCourse);
+
+            if (core.ReverseAzimuthToTarget.IsInitialized)
+                sb.AppendFormat("🡿{0} ", core.ReverseAzimuthToTarget);
+
+            if (sb.Length > 0)
+                InvokeSetText(targetToolStrip, targetCrsLbl, sb.ToString());
 
             sb.Clear();
 
@@ -828,54 +897,26 @@ namespace RWLT_Host
 
             if (core.TargetTemperature.IsInitialized)
                 sb.AppendFormat("🌡{0} ", core.TargetTemperature);
-
-            if (core.TargetCourse.IsInitializedAndNotObsolete)
-                sb.AppendFormat("⎈{0} ", core.TargetCourse);
-
-            if (core.TargetSpeed.IsInitializedAndNotObsolete)
-                sb.AppendFormat("🚄{0} ", core.TargetSpeed);
-
             
             if (sb.Length > 0)
-            {
-                InvokeSetText(targetToolStrip, targetLbl, sb.ToString());
-            }
+                InvokeSetText(targetToolStrip, targetMiscLbl, sb.ToString());
 
             #endregion
 
-            #region Target-to-base arrangement quality label
+            #region Target-to-base arrangement quality & GDOP labels
 
-            if (!double.IsNaN(core.MaxAngularGap))
+            if (core.TBAState.IsInitialized)
             {
-                string tbaLine = string.Empty;
-                Color tbaLineColor = Color.FromKnownColor(KnownColor.MenuText);
-
-                double angularGapDeg = Algorithms.Rad2Deg(core.MaxAngularGap);
-
-                if (angularGapDeg >= 180)
-                {
-                    tbaLine = "OUT OF BASE";
-                    tbaLineColor = Color.Red;
-                }
-                else if (angularGapDeg > 160)
-                {
-                    tbaLine = "POOR";
-                    tbaLineColor = Color.Orange;
-                }
-                else if (angularGapDeg > 140)
-                {
-                    tbaLine = "FAIR";
-                    tbaLineColor = Color.Black;
-                }
-                else
-                {
-                    tbaLine = "GOOD";
-                    tbaLineColor = Color.Green;
-                }
-
-                InvokeSetText(targetToolStrip, tbaLabel, tbaLine);
-                InvokeSetColorMode(targetToolStrip, tbaLabel, tbaLineColor);
+                InvokeSetText(targetToolStrip, tbaLbl, core.TBAState.ToString());
+                InvokeSetColorMode(targetToolStrip, tbaLbl, tbaTextColors[core.TBAState.Value]);
             }
+
+            if (core.HDOPState.IsInitialized)
+            {
+                InvokeSetText(targetToolStrip, hdopLbl, core.HDOPState.ToString());
+                InvokeSetColorMode(targetToolStrip, hdopLbl, dopTextColors[core.HDOPState.Value]);
+            }
+
 
             #endregion
 
@@ -885,23 +926,26 @@ namespace RWLT_Host
             {
                 sb.Clear();
 
-                if (core.DistanceToTarget.IsInitialized)
-                    sb.AppendFormat("🡺{0} ", core.DistanceToTarget);
+                if (core.AUXTrack.IsInitialized)
+                    sb.AppendFormat("⎈{0} ", core.AUXTrack);
 
                 if (core.ForwardAzimuthToTarget.IsInitialized)
                     sb.AppendFormat("🡽{0} ", core.ForwardAzimuthToTarget);
 
-                if (core.AUXTrack.IsInitialized)
-                    sb.AppendFormat("⎈{0} ", core.AUXTrack);
+                if (sb.Length > 0)
+                    InvokeSetText(auxToolStrip, auxCrsLbl, sb.ToString());
 
-                if (core.ReverseAzimuthToTarget.IsInitialized)
-                    sb.AppendFormat("🡿{0} ", core.ReverseAzimuthToTarget);
+
+                sb.Clear();                
+
+                if (core.DistanceToTarget.IsInitialized)
+                    sb.AppendFormat("🡺{0} ", core.DistanceToTarget);
+
+                if (core.AUXSpeed.IsInitialized)
+                    sb.AppendFormat("🐌{0} ", core.AUXSpeed);
 
                 if (sb.Length > 0)
-                {
-                    InvokeSetText(targetToolStrip, courseDstToTargetLbl,
-                        sb.ToString());
-                }
+                    InvokeSetText(auxToolStrip, auxMiscLbl, sb.ToString());
             }
 
             #endregion
@@ -913,7 +957,7 @@ namespace RWLT_Host
             {              
                 double course_deg = double.NaN;
 
-                if (e.ID == "Target")
+                if (e.ID == "RWLT (FLT)")
                 {
                     if (core.TargetCourse.IsInitialized)
                         course_deg = core.TargetCourse.Value;
@@ -936,7 +980,7 @@ namespace RWLT_Host
                 InvokeSaveFullScreenshot();
         }
 
-        #endregion
+        #endregion        
 
         #endregion                
     }
