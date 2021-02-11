@@ -275,6 +275,7 @@ namespace RWLT_Host.RWLT
             if (auxLon > 0) lonCardinal = "East";
             else lonCardinal = "West";
 
+            /*
             NewEmuStringEvent.Rise(this,
                 new EmuStringEventArgs(
                     NMEAParser.BuildSentence(TalkerIdentifiers.GN, SentenceIdentifiers.RMC, new object[] 
@@ -290,6 +291,7 @@ namespace RWLT_Host.RWLT
                 null, // magnetic variation direction
                 "A",                
             })));
+            */
 
             #endregion            
         }

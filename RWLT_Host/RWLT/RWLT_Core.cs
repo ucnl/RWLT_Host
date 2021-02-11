@@ -76,6 +76,7 @@ namespace RWLT_Host.RWLT
             }
         }
 
+        DateTime targetFixTimeStamp = DateTime.MinValue;
         public AgingValue<double> TargetLatitude;
         public AgingValue<double> TargetLongitude;
         public AgingValue<double> TargetLocationRadialError;
@@ -101,6 +102,11 @@ namespace RWLT_Host.RWLT
         public AgingValue<double> AUXLongitude;
         public AgingValue<double> AUXTrack;
         public AgingValue<double> AUXSpeed;
+
+        public AgingValue<double> CEP;
+        public AgingValue<double> DRMS;
+        public AgingValue<double> DRMS2;
+        public AgingValue<double> DRMS3;
 
         public bool IsRadialErrorExeedsThreshold { get; private set; }
 
@@ -151,6 +157,41 @@ namespace RWLT_Host.RWLT
         DateTime gnssTimeFix = DateTime.MinValue;
         DateTime gnssTimeFixLocalTS = DateTime.MinValue;
 
+        BaseIDs auxGNSSBuoyID = BaseIDs.BASE_INVALID;
+        public BaseIDs AuxGNSSBuoyID
+        {
+            get
+            {
+                return auxGNSSBuoyID;
+            }
+            set
+            {
+                if ((!AUXGNSSUsed) || (value == BaseIDs.BASE_INVALID))
+                {
+                    auxGNSSBuoyID = value;
+                }
+                else 
+                {
+                    throw new ArgumentException("Unable set a buoy as auxilary GNSS white AUX GNSS port is initialized");
+                }
+            }
+        }
+
+        bool isStatistics = false;
+        public bool IsStatistics
+        {
+            get { return isStatistics; }
+            set
+            {
+                statHelper.Clear();
+                // TODO:
+                isStatistics = value;
+            }
+        }
+
+        public readonly int StatHelperRingSize = 512;
+        List<GeoPoint> statHelper = new List<GeoPoint>();
+
         bool disposed = false;
 
         #endregion
@@ -172,8 +213,8 @@ namespace RWLT_Host.RWLT
                 }
             }
 
-            HDOPState = new AgingValue<DOPState>(4, 10, x => x.ToString());
-            TBAState = new AgingValue<TBAQuality>(4, 10, x => x.ToString().Replace('_', ' '));
+            HDOPState = new AgingValue<DOPState>(4, 10, x => x.ToString().ToUpperInvariant());
+            TBAState = new AgingValue<TBAQuality>(4, 10, x => x.ToString().Replace('_', ' ').ToUpperInvariant());
 
             TargetLatitude = new AgingValue<double>(4, 10, latlonFormatter);
             TargetLongitude = new AgingValue<double>(4, 10, latlonFormatter);
@@ -194,6 +235,11 @@ namespace RWLT_Host.RWLT
             AUXLongitude = new AgingValue<double>(4, 10, latlonFormatter);
             AUXTrack = new AgingValue<double>(4, 10, courseFormatter);
             AUXSpeed = new AgingValue<double>(4, 10, speedFormatter);
+
+            CEP = new AgingValue<double>(4, 300, x => string.Format(CultureInfo.InvariantCulture, "{0:F03} m", x));
+            DRMS = new AgingValue<double>(4, 300, x => string.Format(CultureInfo.InvariantCulture, "{0:F03} m", x));
+            DRMS2 = new AgingValue<double>(4, 300, x => string.Format(CultureInfo.InvariantCulture, "{0:F03} m", x));
+            DRMS3 = new AgingValue<double>(4, 300, x => string.Format(CultureInfo.InvariantCulture, "{0:F03} m", x));
             
             #endregion
 
@@ -279,6 +325,8 @@ namespace RWLT_Host.RWLT
             timer.Start();
 
             #endregion
+
+            statHelper = new List<GeoPoint>();
         }
         
         #endregion
@@ -297,6 +345,8 @@ namespace RWLT_Host.RWLT
                 };
                 auxGNSSPort.PortError += (o, e) => LogEvent.Rise(o, new LogEventArgs(LogLineType.ERROR, string.Format("{0} (AUX) >> {1}", auxGNSSPort.PortName, e.EventType.ToString())));
                 AUXGNSSUsed = true;
+
+                AuxGNSSBuoyID = BaseIDs.BASE_INVALID;
             }
             else
             {
@@ -410,7 +460,35 @@ namespace RWLT_Host.RWLT
             LogEvent.Rise(this, new LogEventArgs(LogLineType.INFO, line));
         }
 
-        #region Private        
+        public void MarkCurrentLocation()
+        {
+            if (TargetLatitude.IsInitialized && TargetLongitude.IsInitialized)
+            {
+                LocationUpdatedEvent.Rise(this,
+                    new LocationUpdatedEventArgs("Marked", TargetLatitude.Value, TargetLongitude.Value,
+                        TargetDepth.IsInitialized ? TargetDepth.Value : 0.0, true, targetFixTimeStamp));                        
+            }
+        }
+
+        #region Private
+
+        public void UpdateStat(double lat, double lon)
+        {
+            statHelper.Add(new GeoPoint(lat, lon));
+            if (statHelper.Count > StatHelperRingSize)
+                statHelper.RemoveAt(0);
+
+            var mPoints = Navigation.GCSToLCS(statHelper, Algorithms.WGS84Ellipsoid);
+
+            double sigmax = 0, sigmay = 0;
+            Navigation.GetPointsSTD2D(mPoints, out sigmax, out sigmay);
+
+            CEP.Value = Navigation.CEP(sigmax, sigmay);
+            var drms = Navigation.DRMS(sigmax, sigmay);
+            DRMS.Value = drms;
+            DRMS2.Value = drms * 2;
+            DRMS3.Value = drms * 3;
+        }
 
         public DateTime GetTimeStamp()
         {
@@ -596,6 +674,20 @@ namespace RWLT_Host.RWLT
                 (!double.IsNaN(baseDepth)))
             {
 
+                if ((baseID == auxGNSSBuoyID) && (!AUXGNSSUsed))
+                {
+                    GNSS_RMCSentenceReceived(this,
+                        new RMCMessageEventArgs(0xFF,
+                            TalkerIdentifiers.GN,
+                            GetTimeStamp(),
+                            baseLat,
+                            baseLon,
+                            double.NaN,
+                            double.NaN,
+                            double.NaN,
+                            true));
+                }
+                
                 LocationUpdatedEvent.Rise(this, new LocationUpdatedEventArgs(baseID.ToString().Replace('_', ' '),
                     baseLat, baseLon, baseDepth,
                     true, 
@@ -686,8 +778,10 @@ namespace RWLT_Host.RWLT
             {
                 AUXLatitude.Value = e.Latitude;
                 AUXLongitude.Value = e.Longitude;
-                AUXTrack.Value = e.TrackTrue;
-                AUXSpeed.Value = e.SpeedKmh;
+                if (!double.IsNaN(e.TrackTrue)) 
+                    AUXTrack.Value = e.TrackTrue;
+                if (!double.IsNaN(e.SpeedKmh))
+                    AUXSpeed.Value = e.SpeedKmh;
 
                 gnssTimeFix = e.TimeFix;
                 gnssTimeFixLocalTS = DateTime.Now;
@@ -711,6 +805,7 @@ namespace RWLT_Host.RWLT
 
         private void pCore_TargetLocationUpdatedExEventHandler(object sender, TargetLocationUpdatedExEventArgs e)
         {
+            targetFixTimeStamp = e.TimeStamp;
             TargetCourse.Value = e.Course;
             IsRadialErrorExeedsThreshold = false;
 
@@ -734,6 +829,10 @@ namespace RWLT_Host.RWLT
                     e.Location.RadialError <= pCore.RadialErrorThreshold,
                     e.TimeStamp));
 
+            if (isStatistics)
+                UpdateStat(locationFlt.Latitude, locationFlt.Longitude);
+
+
             if (OutPortUsed)
             {
                 double wTemp = double.NaN;
@@ -750,8 +849,8 @@ namespace RWLT_Host.RWLT
             }
 
             TargetLocationRadialError.Value = e.Location.RadialError;
-            TargetLatitude.Value = e.Location.Latitude;
-            TargetLongitude.Value = e.Location.Longitude;
+            TargetLatitude.Value = locationFlt.Latitude;
+            TargetLongitude.Value = locationFlt.Longitude;
 
             UpdateDistanceToTarget();
         }
