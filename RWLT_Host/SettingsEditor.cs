@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RWLT_Host.RWLT;
+using System;
 using System.IO.Ports;
 using System.Windows.Forms;
 using UCNLUI.Dialogs;
@@ -89,6 +90,18 @@ namespace RWLT_Host
             set { UIUtils.TrySetNEditValue(rerrEdit, value); }
         }
 
+        bool isBuoyAsAuxGNSS
+        {
+            get { return isBuoyAsAuxGNSSChb.Checked; }
+            set { isBuoyAsAuxGNSSChb.Checked = value; }
+        }
+
+        BaseIDs auxGnssBuoyID
+        {
+            get { return (BaseIDs)Enum.Parse(typeof(BaseIDs), UIUtils.TryGetCbxItem(auxGnssBuoyIDCbx)); }
+            set { UIUtils.TrySetCbxItem(auxGnssBuoyIDCbx, value.ToString()); }
+        }
+
         public SettingsContainer Value
         {
             get
@@ -107,6 +120,8 @@ namespace RWLT_Host
                 result.SoundSpeedMPS = soundSpeedMps;
                 result.TrackPointsToShow = trackFIFOSize;
                 result.RadialErrorThrehsold = rerrThreshold;
+                result.IsUseBuoyAsAUXGNSS = isBuoyAsAuxGNSS;
+                result.AuxGNSSBuoyID = auxGnssBuoyID;
                 return result;                
             }
             set
@@ -124,6 +139,8 @@ namespace RWLT_Host
                 soundSpeedMps = value.SoundSpeedMPS;
                 trackFIFOSize = value.TrackPointsToShow;
                 rerrThreshold = value.RadialErrorThrehsold;
+                isBuoyAsAuxGNSS = value.IsUseBuoyAsAUXGNSS;
+                auxGnssBuoyID = value.AuxGNSSBuoyID;
             }
         }
 
@@ -154,6 +171,9 @@ namespace RWLT_Host
                 inportBaudrate = UCNLDrivers.BaudRate.baudRate9600;
                 outportBaudrate = UCNLDrivers.BaudRate.baudRate9600;
                 auxGNSSPortBaudrate = UCNLDrivers.BaudRate.baudRate9600;
+
+                auxGnssBuoyIDCbx.Items.AddRange(new string[] { BaseIDs.BASE_1.ToString(), BaseIDs.BASE_2.ToString(), BaseIDs.BASE_3.ToString(), BaseIDs.BASE_4.ToString() });
+                auxGnssBuoyID = BaseIDs.BASE_1;
             }
         }
 
@@ -192,6 +212,12 @@ namespace RWLT_Host
         private void isUseAUXGNSSPortChb_CheckedChanged(object sender, EventArgs e)
         {
             auxGNSSPortGroup.Enabled = isUseAUXGNSSPort;
+            
+            if (isUseAUXGNSSPort)
+            {
+                isBuoyAsAuxGNSS = false;
+            }
+
             CheckValidity();
         }
 
@@ -217,7 +243,16 @@ namespace RWLT_Host
                 }
             }
         }
+
+        private void isBuoyAsAuxGNSSChb_CheckedChanged(object sender, EventArgs e)
+        {
+            auxGnssBuoysGroup.Enabled = isBuoyAsAuxGNSSChb.Checked;
+            if (isBuoyAsAuxGNSS)
+            {
+                isUseAUXGNSSPortChb.Checked = false;
+            }
+        }
         
-        #endregion                
+        #endregion        
     }
 }

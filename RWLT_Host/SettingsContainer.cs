@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RWLT_Host.RWLT;
+using System;
 using UCNLDrivers;
 
 namespace RWLT_Host
@@ -34,6 +35,11 @@ namespace RWLT_Host
         public int CourseEstimatorFIFOSize;
         public int TrackFilterFIFOSize;
 
+        public bool IsUseBuoyAsAUXGNSS;
+        public BaseIDs AuxGNSSBuoyID;
+
+        public string[] TileServers;
+
         #endregion
 
         #region Methods
@@ -56,7 +62,7 @@ namespace RWLT_Host
             IsSoundSpeedAuto = true;
             SoundSpeedMPS = 1500;
 
-            RadialErrorThrehsold = 5;
+            RadialErrorThrehsold = 10;
 
             TrackPointsToShow = 100;
 
@@ -64,6 +70,16 @@ namespace RWLT_Host
 
             CourseEstimatorFIFOSize = 8;
             TrackFilterFIFOSize = 4;
+
+            IsUseBuoyAsAUXGNSS = false;
+            AuxGNSSBuoyID = BaseIDs.BASE_1;
+
+            TileServers = new string[]
+            {
+                "https://a.tile.openstreetmap.org",
+                "https://b.tile.openstreetmap.org",
+                "https://c.tile.openstreetmap.org"
+            };
         }
 
         #endregion

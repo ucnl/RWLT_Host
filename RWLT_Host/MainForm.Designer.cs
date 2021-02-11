@@ -54,7 +54,6 @@
             this.mainPortStatusLbl = new System.Windows.Forms.ToolStripStatusLabel();
             this.auxGNSSStatusCaptionLbl = new System.Windows.Forms.ToolStripStatusLabel();
             this.auxGNSSStatusLbl = new System.Windows.Forms.ToolStripStatusLabel();
-            this.geoPlot = new UCNLUI.Controls.GeoPlotCartesian();
             this.targetToolStrip = new System.Windows.Forms.ToolStrip();
             this.auxCapLbl = new System.Windows.Forms.ToolStripLabel();
             this.auxCrsLbl = new System.Windows.Forms.ToolStripLabel();
@@ -74,6 +73,8 @@
             this.plotToolStrip = new System.Windows.Forms.ToolStrip();
             this.toolStripLabel3 = new System.Windows.Forms.ToolStripLabel();
             this.tracksToFitCbx = new System.Windows.Forms.ToolStripComboBox();
+            this.geoPlot = new UCNLUI.Controls.uOSMGeoPlot();
+            this.isStatisticsBtn = new System.Windows.Forms.ToolStripButton();
             this.mainToolStrip.SuspendLayout();
             this.mainStatusStrip.SuspendLayout();
             this.targetToolStrip.SuspendLayout();
@@ -312,28 +313,6 @@
             this.auxGNSSStatusLbl.Text = "CLOSED";
             this.auxGNSSStatusLbl.Visible = false;
             // 
-            // geoPlot
-            // 
-            this.geoPlot.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.geoPlot.AxisLabelsColor = System.Drawing.Color.Gainsboro;
-            this.geoPlot.AxisLabelsFntSize = 3;
-            this.geoPlot.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(15)))), ((int)(((byte)(20)))), ((int)(((byte)(30)))));
-            this.geoPlot.CourseLineLength = 200;
-            this.geoPlot.FitByDictionary = false;
-            this.geoPlot.GridColor = System.Drawing.Color.Gainsboro;
-            this.geoPlot.HistoryLinesColor = System.Drawing.Color.GreenYellow;
-            this.geoPlot.HistoryLinesFntSize = 3;
-            this.geoPlot.LeftUpperCornerText = "";
-            this.geoPlot.Location = new System.Drawing.Point(15, 146);
-            this.geoPlot.Margin = new System.Windows.Forms.Padding(6, 9, 6, 9);
-            this.geoPlot.MiscFntSize = 4;
-            this.geoPlot.MiscInfoColor = System.Drawing.Color.Yellow;
-            this.geoPlot.Name = "geoPlot";
-            this.geoPlot.Size = new System.Drawing.Size(847, 385);
-            this.geoPlot.TabIndex = 2;
-            // 
             // targetToolStrip
             // 
             this.targetToolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -397,9 +376,9 @@
             // 
             // tbaLbl
             // 
-            this.tbaLbl.Font = new System.Drawing.Font("Segoe UI", 16.2F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.tbaLbl.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.tbaLbl.Name = "tbaLbl";
-            this.tbaLbl.Size = new System.Drawing.Size(66, 38);
+            this.tbaLbl.Size = new System.Drawing.Size(48, 38);
             this.tbaLbl.Text = "- - -";
             this.tbaLbl.ToolTipText = "Target-to-base arrangement quality";
             // 
@@ -413,9 +392,9 @@
             // 
             // hdopLbl
             // 
-            this.hdopLbl.Font = new System.Drawing.Font("Segoe UI", 16.2F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.hdopLbl.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.hdopLbl.Name = "hdopLbl";
-            this.hdopLbl.Size = new System.Drawing.Size(66, 38);
+            this.hdopLbl.Size = new System.Drawing.Size(48, 38);
             this.hdopLbl.Text = "- - -";
             this.hdopLbl.ToolTipText = "Better when the target is inside navigation base";
             // 
@@ -470,7 +449,8 @@
             // 
             this.plotToolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripLabel3,
-            this.tracksToFitCbx});
+            this.tracksToFitCbx,
+            this.isStatisticsBtn});
             this.plotToolStrip.Location = new System.Drawing.Point(0, 112);
             this.plotToolStrip.Name = "plotToolStrip";
             this.plotToolStrip.Size = new System.Drawing.Size(877, 28);
@@ -492,15 +472,55 @@
             this.tracksToFitCbx.Size = new System.Drawing.Size(200, 28);
             this.tracksToFitCbx.SelectedIndexChanged += new System.EventHandler(this.tracksToFitCbx_SelectedIndexChanged);
             // 
+            // geoPlot
+            // 
+            this.geoPlot.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.geoPlot.BackColor = System.Drawing.Color.Beige;
+            this.geoPlot.HistoryLinesNumber = 5;
+            this.geoPlot.HistoryTextColor = System.Drawing.Color.ForestGreen;
+            this.geoPlot.HistoryTextFont = new System.Drawing.Font("Consolas", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.geoPlot.HistoryVisible = true;
+            this.geoPlot.LeftUpperText = null;
+            this.geoPlot.LeftUpperTextColor = System.Drawing.Color.DarkBlue;
+            this.geoPlot.LeftUpperTextFont = new System.Drawing.Font("Consolas", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.geoPlot.LegendFont = new System.Drawing.Font("Consolas", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.geoPlot.Location = new System.Drawing.Point(13, 145);
+            this.geoPlot.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.geoPlot.MaxHistoryLineLength = 127;
+            this.geoPlot.MeasurementLineColor = System.Drawing.Color.Black;
+            this.geoPlot.MeasurementTextBgColor = System.Drawing.Color.FromArgb(((int)(((byte)(190)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
+            this.geoPlot.MeasurementTextColor = System.Drawing.Color.Black;
+            this.geoPlot.MeasurementTextFont = new System.Drawing.Font("Consolas", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.geoPlot.Name = "geoPlot";
+            this.geoPlot.Padding = new System.Windows.Forms.Padding(14, 18, 14, 18);
+            this.geoPlot.ScaleLineColor = System.Drawing.SystemColors.ControlText;
+            this.geoPlot.ScaleLineFont = new System.Drawing.Font("Consolas", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.geoPlot.Size = new System.Drawing.Size(851, 390);
+            this.geoPlot.TabIndex = 6;
+            this.geoPlot.TextBackgroundColor = System.Drawing.Color.Wheat;
+            // 
+            // isStatisticsBtn
+            // 
+            this.isStatisticsBtn.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.isStatisticsBtn.Font = new System.Drawing.Font("Segoe UI", 9F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Underline))), System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.isStatisticsBtn.Image = ((System.Drawing.Image)(resources.GetObject("isStatisticsBtn.Image")));
+            this.isStatisticsBtn.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.isStatisticsBtn.Name = "isStatisticsBtn";
+            this.isStatisticsBtn.Size = new System.Drawing.Size(92, 25);
+            this.isStatisticsBtn.Text = "STATISTICS";
+            this.isStatisticsBtn.Click += new System.EventHandler(this.isStatisticsBtn_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(11F, 28F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(877, 568);
+            this.Controls.Add(this.geoPlot);
             this.Controls.Add(this.plotToolStrip);
             this.Controls.Add(this.auxToolStrip);
             this.Controls.Add(this.targetToolStrip);
-            this.Controls.Add(this.geoPlot);
             this.Controls.Add(this.mainStatusStrip);
             this.Controls.Add(this.mainToolStrip);
             this.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -529,7 +549,6 @@
         private System.Windows.Forms.ToolStrip mainToolStrip;
         private System.Windows.Forms.StatusStrip mainStatusStrip;
         private System.Windows.Forms.ToolStripButton connectionBtn;
-        private UCNLUI.Controls.GeoPlotCartesian geoPlot;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.ToolStripButton settingsBtn;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
@@ -571,6 +590,8 @@
         private System.Windows.Forms.ToolStrip plotToolStrip;
         private System.Windows.Forms.ToolStripLabel toolStripLabel3;
         private System.Windows.Forms.ToolStripComboBox tracksToFitCbx;
+        private UCNLUI.Controls.uOSMGeoPlot geoPlot;
+        private System.Windows.Forms.ToolStripButton isStatisticsBtn;
     }
 }
 

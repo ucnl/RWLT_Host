@@ -44,7 +44,7 @@
     <Reference Include="UCNLKML">
       <HintPath>..\..\..\UCNLLibs\UCNLKML\UCNLKML\bin\Release\UCNLKML.dll</HintPath>
     </Reference>
-    <Reference Include="UCNLNav, Version=1.0.7578.30868, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="UCNLNav, Version=1.0.7691.29923, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\UCNLLibs\UCNLNav\UCNLNav\bin\Release\UCNLNav.dll</HintPath>
     </Reference>
@@ -57,6 +57,10 @@
     <Reference Include="UCNLUI, Version=1.0.7405.18900, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\UCNLLibs\UCNLUI\UCNLUI\bin\Release\UCNLUI.dll</HintPath>
+    </Reference>
+    <Reference Include="uOSM, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\UCNLLibs\uOSM\uOSM\bin\Release\uOSM.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

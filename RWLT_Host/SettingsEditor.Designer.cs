@@ -59,6 +59,10 @@
             this.auxGNSSPortBaudrateCbx = new System.Windows.Forms.ComboBox();
             this.label9 = new System.Windows.Forms.Label();
             this.auxGNSSPortNameCbx = new System.Windows.Forms.ComboBox();
+            this.auxGnssBuoysGroup = new System.Windows.Forms.GroupBox();
+            this.label11 = new System.Windows.Forms.Label();
+            this.auxGnssBuoyIDCbx = new System.Windows.Forms.ComboBox();
+            this.isBuoyAsAuxGNSSChb = new System.Windows.Forms.CheckBox();
             this.basesPortGoup.SuspendLayout();
             this.outputPortGroup.SuspendLayout();
             this.wpGroup.SuspendLayout();
@@ -68,6 +72,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.rerrEdit)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackFIFOSizeEdit)).BeginInit();
             this.auxGNSSPortGroup.SuspendLayout();
+            this.auxGnssBuoysGroup.SuspendLayout();
             this.SuspendLayout();
             // 
             // okBtn
@@ -75,7 +80,7 @@
             this.okBtn.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.okBtn.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.okBtn.Font = new System.Drawing.Font("Segoe UI", 12F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Underline))), System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.okBtn.Location = new System.Drawing.Point(440, 551);
+            this.okBtn.Location = new System.Drawing.Point(473, 596);
             this.okBtn.Name = "okBtn";
             this.okBtn.Size = new System.Drawing.Size(113, 43);
             this.okBtn.TabIndex = 0;
@@ -87,7 +92,7 @@
             this.cancelBtn.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.cancelBtn.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.cancelBtn.Font = new System.Drawing.Font("Segoe UI", 12F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Underline))), System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.cancelBtn.Location = new System.Drawing.Point(587, 551);
+            this.cancelBtn.Location = new System.Drawing.Point(620, 596);
             this.cancelBtn.Name = "cancelBtn";
             this.cancelBtn.Size = new System.Drawing.Size(113, 43);
             this.cancelBtn.TabIndex = 1;
@@ -219,7 +224,7 @@
             this.wpGroup.Controls.Add(this.isAutoSoundSpeedChb);
             this.wpGroup.Controls.Add(this.salinityEdit);
             this.wpGroup.Controls.Add(this.label5);
-            this.wpGroup.Location = new System.Drawing.Point(12, 275);
+            this.wpGroup.Location = new System.Drawing.Point(12, 317);
             this.wpGroup.Name = "wpGroup";
             this.wpGroup.Size = new System.Drawing.Size(225, 250);
             this.wpGroup.TabIndex = 4;
@@ -316,9 +321,9 @@
             this.groupBox1.Controls.Add(this.label10);
             this.groupBox1.Controls.Add(this.trackFIFOSizeEdit);
             this.groupBox1.Controls.Add(this.label7);
-            this.groupBox1.Location = new System.Drawing.Point(243, 275);
+            this.groupBox1.Location = new System.Drawing.Point(243, 317);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(456, 250);
+            this.groupBox1.Size = new System.Drawing.Size(225, 250);
             this.groupBox1.TabIndex = 11;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Misc.";
@@ -352,9 +357,9 @@
             this.label10.AutoSize = true;
             this.label10.Location = new System.Drawing.Point(17, 160);
             this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(228, 28);
+            this.label10.Size = new System.Drawing.Size(172, 28);
             this.label10.TabIndex = 11;
-            this.label10.Text = "Radial error threshold, m";
+            this.label10.Text = "RERR threshold, m";
             // 
             // trackFIFOSizeEdit
             // 
@@ -453,11 +458,56 @@
             this.auxGNSSPortNameCbx.TabIndex = 4;
             this.auxGNSSPortNameCbx.SelectedIndexChanged += new System.EventHandler(this.auxGNSSPortNameCbx_SelectedIndexChanged);
             // 
+            // auxGnssBuoysGroup
+            // 
+            this.auxGnssBuoysGroup.Controls.Add(this.label11);
+            this.auxGnssBuoysGroup.Controls.Add(this.auxGnssBuoyIDCbx);
+            this.auxGnssBuoysGroup.Enabled = false;
+            this.auxGnssBuoysGroup.Location = new System.Drawing.Point(480, 317);
+            this.auxGnssBuoysGroup.Name = "auxGnssBuoysGroup";
+            this.auxGnssBuoysGroup.Size = new System.Drawing.Size(225, 250);
+            this.auxGnssBuoysGroup.TabIndex = 14;
+            this.auxGnssBuoysGroup.TabStop = false;
+            this.auxGnssBuoysGroup.Text = "AUX GNSS Buoy";
+            // 
+            // label11
+            // 
+            this.label11.AutoSize = true;
+            this.label11.Location = new System.Drawing.Point(19, 38);
+            this.label11.Name = "label11";
+            this.label11.Size = new System.Drawing.Size(80, 28);
+            this.label11.TabIndex = 5;
+            this.label11.Text = "Buoy ID";
+            // 
+            // auxGnssBuoyIDCbx
+            // 
+            this.auxGnssBuoyIDCbx.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.auxGnssBuoyIDCbx.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.auxGnssBuoyIDCbx.FormattingEnabled = true;
+            this.auxGnssBuoyIDCbx.Location = new System.Drawing.Point(6, 71);
+            this.auxGnssBuoyIDCbx.Name = "auxGnssBuoyIDCbx";
+            this.auxGnssBuoyIDCbx.Size = new System.Drawing.Size(213, 36);
+            this.auxGnssBuoyIDCbx.TabIndex = 4;
+            // 
+            // isBuoyAsAuxGNSSChb
+            // 
+            this.isBuoyAsAuxGNSSChb.AutoSize = true;
+            this.isBuoyAsAuxGNSSChb.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.isBuoyAsAuxGNSSChb.Location = new System.Drawing.Point(474, 279);
+            this.isBuoyAsAuxGNSSChb.Name = "isBuoyAsAuxGNSSChb";
+            this.isBuoyAsAuxGNSSChb.Size = new System.Drawing.Size(253, 32);
+            this.isBuoyAsAuxGNSSChb.TabIndex = 15;
+            this.isBuoyAsAuxGNSSChb.Text = "Use Buoy as AUX GNSS";
+            this.isBuoyAsAuxGNSSChb.UseVisualStyleBackColor = true;
+            this.isBuoyAsAuxGNSSChb.CheckedChanged += new System.EventHandler(this.isBuoyAsAuxGNSSChb_CheckedChanged);
+            // 
             // SettingsEditor
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(11F, 28F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(712, 606);
+            this.ClientSize = new System.Drawing.Size(745, 651);
+            this.Controls.Add(this.isBuoyAsAuxGNSSChb);
+            this.Controls.Add(this.auxGnssBuoysGroup);
             this.Controls.Add(this.isUseAUXGNSSPortChb);
             this.Controls.Add(this.auxGNSSPortGroup);
             this.Controls.Add(this.groupBox1);
@@ -488,6 +538,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.trackFIFOSizeEdit)).EndInit();
             this.auxGNSSPortGroup.ResumeLayout(false);
             this.auxGNSSPortGroup.PerformLayout();
+            this.auxGnssBuoysGroup.ResumeLayout(false);
+            this.auxGnssBuoysGroup.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -526,5 +578,9 @@
         private System.Windows.Forms.NumericUpDown rerrEdit;
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.LinkLabel styDialogLnk;
+        private System.Windows.Forms.GroupBox auxGnssBuoysGroup;
+        private System.Windows.Forms.Label label11;
+        private System.Windows.Forms.ComboBox auxGnssBuoyIDCbx;
+        private System.Windows.Forms.CheckBox isBuoyAsAuxGNSSChb;
     }
 }

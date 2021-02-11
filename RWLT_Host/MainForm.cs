@@ -14,12 +14,15 @@ using UCNLKML;
 using UCNLNav;
 using UCNLNMEA;
 using UCNLUI.Dialogs;
+using uOSM;
 
 namespace RWLT_Host
 {   
     public partial class MainForm : Form
     {
         #region Properties
+
+        uOSMTileProvider tProvider;
 
         TSLogProvider logger;
         SimpleSettingsProviderXML<SettingsContainer> settingsProvider;       
@@ -28,6 +31,7 @@ namespace RWLT_Host
         string logPath;
         string logFileName;
         string snapshotsPath;
+        string tileDBPath;
 
         bool isRestart = false;
         bool isAutoscreenshot = false;
@@ -93,6 +97,8 @@ namespace RWLT_Host
             logFileName = StrUtils.GetTimeDirTreeFileName(startTime, Application.ExecutablePath, "LOG", "log", true);
             snapshotsPath = StrUtils.GetTimeDirTree(startTime, Application.ExecutablePath, "SNAPSHOTS", false);
 
+            tileDBPath = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), "Cache\\Tiles\\");
+
             #endregion
 
             #region logger
@@ -149,37 +155,46 @@ namespace RWLT_Host
                     System.IO.Ports.Handshake.None));
 
             if (settingsProvider.Data.IsUseAUXGNSSPort)
-                core.InitAUXGNSSPort(new SerialPortSettings(settingsProvider.Data.AUXGNSSPortName, 
-                    settingsProvider.Data.AUXGNSSPortBaudrate, 
-                    System.IO.Ports.Parity.None, 
-                    DataBits.dataBits8, 
-                    System.IO.Ports.StopBits.One, 
+            {
+                core.InitAUXGNSSPort(new SerialPortSettings(settingsProvider.Data.AUXGNSSPortName,
+                    settingsProvider.Data.AUXGNSSPortBaudrate,
+                    System.IO.Ports.Parity.None,
+                    DataBits.dataBits8,
+                    System.IO.Ports.StopBits.One,
                     System.IO.Ports.Handshake.None));
+            }
+            else
+            {
+                if (settingsProvider.Data.IsUseBuoyAsAUXGNSS && (settingsProvider.Data.AuxGNSSBuoyID != BaseIDs.BASE_INVALID))
+                {
+                    core.AuxGNSSBuoyID = settingsProvider.Data.AuxGNSSBuoyID;
+                }
+            }
             
             #endregion
 
             #region Misc. UI
 
-            auxCrsLbl.Visible = settingsProvider.Data.IsUseAUXGNSSPort;
-            auxCapLbl.Visible = settingsProvider.Data.IsUseAUXGNSSPort;
-            auxGNSSStatusLbl.Visible = settingsProvider.Data.IsUseAUXGNSSPort;
-            auxGNSSStatusCaptionLbl.Visible = settingsProvider.Data.IsUseAUXGNSSPort;
-            auxGNSSStatusCaptionLbl.Visible = settingsProvider.Data.IsUseAUXGNSSPort;
-            auxGNSSStatusLbl.Visible = settingsProvider.Data.IsUseAUXGNSSPort;
+            auxCrsLbl.Visible = settingsProvider.Data.IsUseAUXGNSSPort || settingsProvider.Data.IsUseBuoyAsAUXGNSS;
+            auxCapLbl.Visible = settingsProvider.Data.IsUseAUXGNSSPort || settingsProvider.Data.IsUseBuoyAsAUXGNSS;
+            auxGNSSStatusLbl.Visible = settingsProvider.Data.IsUseAUXGNSSPort || settingsProvider.Data.IsUseBuoyAsAUXGNSS;
+            auxGNSSStatusCaptionLbl.Visible = settingsProvider.Data.IsUseAUXGNSSPort || settingsProvider.Data.IsUseBuoyAsAUXGNSS;
+            auxGNSSStatusCaptionLbl.Visible = settingsProvider.Data.IsUseAUXGNSSPort || settingsProvider.Data.IsUseBuoyAsAUXGNSS;
+            auxGNSSStatusLbl.Visible = settingsProvider.Data.IsUseAUXGNSSPort || settingsProvider.Data.IsUseBuoyAsAUXGNSS;
 
             List<string> fitTracksNames = new List<string>();
             fitTracksNames.Add("ALL");
             fitTracksNames.Add("RWLT (FLT)");
             fitTracksNames.Add("Marked");
             fitTracksNames.Add("RWLT (FLT)+Marked");
+            fitTracksNames.Add("RWLT (FLT)+RWLT (RAW)");
 
-            geoPlot.AddTrack("RWLT (RAW)", Color.Yellow, 1, 2, 64, true);
-            geoPlot.AddTrack("RWLT (FLT)", Color.Lime, 1, 2, settingsProvider.Data.TrackPointsToShow, true);
+            geoPlot.InitTrack("RWLT (RAW)", 64, Color.Yellow, 1, 4, false, Color.Yellow, 1, 200);
+            geoPlot.InitTrack("RWLT (FLT)", settingsProvider.Data.TrackPointsToShow, Color.Red, 1, 4, true, Color.Red, 1, 200);
 
             if (settingsProvider.Data.IsUseAUXGNSSPort)
             {
-                geoPlot.AddTrack("AUX GNSS", Color.Cyan, 1, 4, 64, true);
-                fitTracksNames.Add("AUX GNSS");
+                geoPlot.InitTrack("AUX GNSS", 64, Color.Blue, 1, 4, true, Color.Blue, 1, 200);
                 fitTracksNames.Add("RWLT (FLT)+AUX GNSS");
                 fitTracksNames.Add("RWLT (FLT)+AUX GNSS+Marked");
             }
@@ -189,18 +204,23 @@ namespace RWLT_Host
             fitTracksNames.Add("BASE 3");
             fitTracksNames.Add("BASE 4");
 
-            geoPlot.AddTrack("Marked", Color.Magenta, 4, 6, 256, false);
+            geoPlot.InitTrack("Marked", 256, Color.Black, 4, 4, false, Color.Black, 1, 200);
+
+            geoPlot.InitTrack("BASE 1", 4, Color.DarkRed, 2, 4, false, Color.Salmon, 1, 200);
+            geoPlot.InitTrack("BASE 2", 4, Color.DarkOrange, 2, 4, false, Color.Gold, 1, 200);
+            geoPlot.InitTrack("BASE 3", 4, Color.Green, 2, 4, false, Color.MediumSpringGreen, 1, 200);
+            geoPlot.InitTrack("BASE 4", 4, Color.Purple, 2, 4, false, Color.SkyBlue, 1, 200);
             
-            geoPlot.AddTrack("BASE 1", Color.Salmon, 4, 6, 4, false);
-            geoPlot.AddTrack("BASE 2", Color.Gold, 4, 6, 4, false);
-            geoPlot.AddTrack("BASE 3", Color.MediumSpringGreen, 4, 6, 4, false);
-            geoPlot.AddTrack("BASE 4", Color.SkyBlue, 4, 6, 4, false);
 
             TracksChanged = false;
 
             tracksToFitCbx.Items.Clear();
             tracksToFitCbx.Items.AddRange(fitTracksNames.ToArray());
             tracksToFitCbx.SelectedIndex = 0;
+
+            geoPlot.SetTracksVisibility(true);
+
+            geoPlot.TextBackgroundColor = Color.FromArgb(127, Color.White);
 
             #endregion
 
@@ -210,9 +230,16 @@ namespace RWLT_Host
             emulatorBtn.Visible = emulatorEnabled;
             if (emulatorEnabled)
             {
-                emulator = new RWLT_Emulator(48 + 58 / 60.0 + 5.17 / 3600.0, 44 + 45 / 60.0 + 38.12 / 3600.0, 30, 10, 7);
+                emulator = new RWLT_Emulator(48 + 30 / 60.0 + 16.03 / 3600.0, 44 + 33 / 60.0 + 6.01 / 3600.0, 30, 10, 7);
                 emulator.NewEmuStringEvent += (o, e) => core.Emulate(e.EmuString);
             }
+
+            #endregion
+
+            #region tProvider
+
+            tProvider = new uOSMTileProvider(256, 19, new Size(256, 256), tileDBPath, settingsProvider.Data.TileServers);
+            geoPlot.ConnectTileProvider(tProvider);
 
             #endregion
         }
@@ -220,7 +247,7 @@ namespace RWLT_Host
         #endregion
 
         #region Methods
-
+        
         private void SaveFullScreenshot()
         {
             Bitmap target = new Bitmap(this.Width, this.Height);
@@ -258,33 +285,33 @@ namespace RWLT_Host
         private void InvokeAppendHisotryLine(string line)
         {
             if (geoPlot.InvokeRequired)
-                geoPlot.Invoke((MethodInvoker)delegate { geoPlot.AppendHistoryLine(line); });
+                geoPlot.Invoke((MethodInvoker)delegate { geoPlot.AppendHistory(line); });
             else
-                geoPlot.AppendHistoryLine(line);
+                geoPlot.AppendHistory(line);
         }
 
         private void InvokeSetLeftTopCornerText(string line)
         {
             if (geoPlot.InvokeRequired)
-                geoPlot.Invoke((MethodInvoker)delegate { geoPlot.LeftUpperCornerText = line; });
+                geoPlot.Invoke((MethodInvoker)delegate { geoPlot.LeftUpperText = line; });
             else
-                geoPlot.LeftUpperCornerText = line;
+                geoPlot.LeftUpperText = line;
         }
 
         private void InvokeUpdateTrack(string id, double lat, double lon, double course)
         {
             if (geoPlot.InvokeRequired)
-                geoPlot.Invoke((MethodInvoker)delegate { geoPlot.UpdateTrack(id, lat, lon, course); });
+                geoPlot.Invoke((MethodInvoker)delegate { geoPlot.AddPoint(id, lat, lon, course); });
             else
-                geoPlot.UpdateTrack(id, lat, lon, course);
+                geoPlot.AddPoint(id, lat, lon, course);
         }
 
         private void InvokeUpdateTrack(string id, double lat, double lon)
         {
             if (geoPlot.InvokeRequired)
-                geoPlot.Invoke((MethodInvoker)delegate { geoPlot.UpdateTrack(id, lat, lon); });
+                geoPlot.Invoke((MethodInvoker)delegate { geoPlot.AddPoint(id, lat, lon); });
             else
-                geoPlot.UpdateTrack(id, lat, lon);
+                geoPlot.AddPoint(id, lat, lon);
         }
 
         private void InvokeUpdateView()
@@ -646,10 +673,7 @@ namespace RWLT_Host
 
         private void markCurrentBtn_Click(object sender, EventArgs e)
         {
-            AddTrackPoint("Marked", 
-                core.TargetLatitude.Value, core.TargetLongitude.Value, 
-                core.TargetDepth.IsInitialized ? core.TargetDepth.Value : 0.0,
-                core.GetTimeStamp(), double.NaN);
+            core.MarkCurrentLocation();
         }
 
         private void emulatorBtn_Click(object sender, EventArgs e)
@@ -688,15 +712,20 @@ namespace RWLT_Host
         {
             var fTrackNames = tracksToFitCbx.SelectedItem.ToString();
             if (fTrackNames == "ALL")
-                geoPlot.FitByDictionary = false;
+                geoPlot.SetTracksVisibility(true);
             else
             {
                 var splits = fTrackNames.Split(new char[] { '+' });
-                geoPlot.FitByDictionary = true;
-                geoPlot.TracksToFitSet(splits);
+                geoPlot.SetTracksVisibility(splits, true);
             }
 
             geoPlot.Invalidate();
+        }
+
+        private void isStatisticsBtn_Click(object sender, EventArgs e)
+        {
+            core.IsStatistics = !core.IsStatistics;
+            isStatisticsBtn.Checked = core.IsStatistics;
         }
 
         #endregion
@@ -798,7 +827,7 @@ namespace RWLT_Host
                     sb.AppendFormat(CultureInfo.InvariantCulture, "AER: {0:F03}\r\n", dst_m);
                     //
                 }
-                #endregion
+                #endregion                
             }                            
 
             if (core.TargetDepth.IsInitialized)
@@ -815,6 +844,19 @@ namespace RWLT_Host
 
             if (core.TargetAlarm.IsInitialized)
                 sb.AppendFormat("ALM: {0}\r\n", core.TargetAlarm);
+
+            if (core.CEP.IsInitialized)
+                sb.AppendFormat("CEP: {0}\r\n", core.CEP);
+
+            if (core.DRMS.IsInitialized)
+                sb.AppendFormat("DRMS: {0}\r\n", core.DRMS);
+
+            if (core.DRMS2.IsInitialized)
+                sb.AppendFormat("2DRMS: {0}\r\n", core.DRMS2);
+
+            if (core.DRMS3.IsInitialized)
+                sb.AppendFormat("3DRMS: {0}\r\n", core.DRMS3);
+
 
             sb.Append("\r\nBases");
             foreach (BaseIDs baseID in basesIDs)
@@ -917,12 +959,11 @@ namespace RWLT_Host
                 InvokeSetColorMode(targetToolStrip, hdopLbl, dopTextColors[core.HDOPState.Value]);
             }
 
-
             #endregion
 
             #region AUX/Target
 
-            if (core.AUXGNSSUsed)
+            if (core.AUXGNSSUsed || (core.AuxGNSSBuoyID != BaseIDs.BASE_INVALID))
             {
                 sb.Clear();
 
