@@ -1,8 +1,5 @@
-# RWLT_Host
-Host application for RWLT underwater acoustic tracking system
+Project is discontinued, please, use
 
-## Main window view:
-![RWLT Host main window](/Pics/screen1.png)
+https://github.com/ucnl/uTrack instead
 
-## Integration with SAS.Planet GIS software:
-![SAS.Planet integration](/Pics/screen2.png)
+
